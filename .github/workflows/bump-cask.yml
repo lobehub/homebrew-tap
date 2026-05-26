@@ -1,0 +1,76 @@
+name: Bump cask
+
+on:
+  workflow_dispatch:
+    inputs:
+      cask:
+        description: Cask token
+        required: true
+        type: string
+        default: lobehub
+      version:
+        description: Version without leading v
+        required: true
+        type: string
+  repository_dispatch:
+    types: [bump-cask]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve inputs
+        id: in
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            cask="${{ github.event.client_payload.cask }}"
+            version="${{ github.event.client_payload.version }}"
+          else
+            cask="${{ inputs.cask }}"
+            version="${{ inputs.version }}"
+          fi
+          version="${version#v}"
+          echo "cask=$cask"       >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Compute sha256
+        id: sha
+        run: |
+          v="${{ steps.in.outputs.version }}"
+          base="https://github.com/lobehub/lobehub/releases/download/v${v}"
+          arm=$(curl -fsSL "${base}/LobeHub-${v}-arm64.dmg" | shasum -a 256 | awk '{print $1}')
+          x64=$(curl -fsSL "${base}/LobeHub-${v}-x64.dmg"   | shasum -a 256 | awk '{print $1}')
+          test -n "$arm" && test -n "$x64"
+          echo "arm=$arm" >> "$GITHUB_OUTPUT"
+          echo "x64=$x64" >> "$GITHUB_OUTPUT"
+
+      - name: Patch cask
+        run: |
+          file="Casks/${{ steps.in.outputs.cask }}.rb"
+          v="${{ steps.in.outputs.version }}"
+          arm="${{ steps.sha.outputs.arm }}"
+          x64="${{ steps.sha.outputs.x64 }}"
+          /usr/bin/sed -i '' -E \
+            -e "s/^  version \"[^\"]*\"$/  version \"${v}\"/" \
+            -e "s/^         arm:   \"[^\"]*\",$/         arm:   \"${arm}\",/" \
+            -e "s/^         intel: \"[^\"]*\"$/         intel: \"${x64}\"/" \
+            "$file"
+          git --no-pager diff "$file"
+
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "bump ${{ steps.in.outputs.cask }} to ${{ steps.in.outputs.version }}"
+          branch: bump/${{ steps.in.outputs.cask }}-${{ steps.in.outputs.version }}
+          title: "bump ${{ steps.in.outputs.cask }} to ${{ steps.in.outputs.version }}"
+          body: |
+            Auto bump.
+            - cask: `${{ steps.in.outputs.cask }}`
+            - version: `${{ steps.in.outputs.version }}`
+            - arm64 sha256: `${{ steps.sha.outputs.arm }}`
+            - x64 sha256:   `${{ steps.sha.outputs.x64 }}`

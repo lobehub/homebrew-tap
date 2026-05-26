@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  pull_request:
+    paths:
+      - "Casks/**"
+      - ".github/workflows/ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "Casks/**"
+
+jobs:
+  audit:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Tap this repo
+        run: |
+          tap_dir="$(brew --repository)/Library/Taps/lobehub/homebrew-tap"
+          mkdir -p "$(dirname "$tap_dir")"
+          ln -sf "$PWD" "$tap_dir"
+
+      - name: brew style
+        run: brew style --cask Casks/*.rb
+
+      - name: brew audit
+        run: brew audit --cask --tap lobehub/tap
