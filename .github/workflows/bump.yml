@@ -45,6 +45,8 @@ jobs:
 
       - name: Bump cask & formula to upstream latest
         id: bump
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/bump.sh "${{ steps.target.outputs.target }}"
 
       - name: Commit

@@ -33,10 +33,18 @@ current_version() {
 dmg_sha256() {
   local version="${1}" arch="${2}" dest="${3}"
   local file="LobeHub-${version}-${arch}.dmg"
-  curl -fL --retry 3 --retry-delay 2 -o "${dest}/${file}" \
+  curl -fsL --retry 3 --retry-delay 2 ${gh_auth[@]+"${gh_auth[@]}"} -o "${dest}/${file}" \
     "https://github.com/lobehub/lobehub/releases/download/v${version}/${file}" >/dev/null
   sha256_of "${dest}/${file}"
 }
+
+# GitHub API 未认证只有 60 req/h，CI 上用 token 提高配额（本地没设也能跑）。
+gh_auth=()
+
+if [[ -n "${GITHUB_TOKEN:-}" ]]
+then
+  gh_auth=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+fi
 
 tmp="$(mktemp -d)"
 trap 'rm -rf "${tmp}"' EXIT
@@ -45,7 +53,7 @@ bump_stable() {
   local cask="Casks/lobehub.rb"
   local version current arm_sha intel_sha
 
-  version="$(curl -fsSL "${api}/releases/latest" | jq -r '.tag_name' | sed 's/^v//')"
+  version="$(curl -fsSL ${gh_auth[@]+"${gh_auth[@]}"} "${api}/releases/latest" | jq -r '.tag_name' | sed 's/^v//')"
   current="$(current_version "${cask}")"
 
   if [[ "${version}" == "${current}" ]]
@@ -71,7 +79,7 @@ bump_canary() {
   local version current arm_sha
 
   # canary 是 prerelease，releases/latest 拿不到，直接取最新的 canary tag。
-  version="$(curl -fsSL "${api}/releases?per_page=40" | jq -r '
+  version="$(curl -fsSL ${gh_auth[@]+"${gh_auth[@]}"} "${api}/releases?per_page=40" | jq -r '
     [.[] | select(.prerelease) | .tag_name | select(test("canary"))][0] // empty' | sed 's/^v//')"
   if [[ -z "${version}" ]]
   then
@@ -112,7 +120,7 @@ bump_formula() {
   fi
 
   echo "formula: ${current} -> ${version}"
-  curl -fL --retry 3 --retry-delay 2 -o "${tmp}/cli.tgz" "${tarball}" >/dev/null
+  curl -fsL --retry 3 --retry-delay 2 ${gh_auth[@]+"${gh_auth[@]}"} -o "${tmp}/cli.tgz" "${tarball}" >/dev/null
   sha="$(sha256_of "${tmp}/cli.tgz")"
 
   sed -i.bak -E "s|^  url \"https://registry.npmjs.org/@lobehub/cli/-/cli-.*\.tgz\"\$|  url \"${tarball}\"|" "${formula}"

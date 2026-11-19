@@ -1,8 +1,8 @@
 class LobehubCli < Formula
   desc "CLI for LobeHub agents, workspace data and topics"
   homepage "https://github.com/lobehub/lobehub"
-  url "https://registry.npmjs.org/@lobehub/cli/-/cli-0.0.136.tgz"
-  sha256 "ea25afcd755d56bce4495f24a85776643b119f4fec2bbb88cbad6642b7d5ea08"
+  url "https://registry.npmjs.org/@lobehub/cli/-/cli-0.0.138.tgz"
+  sha256 "d1f4518315b5e6a573673d2124a2e0d071f8c871991117c6cd81fa27a2a113d7"
   license "MIT"
 
   depends_on "node"

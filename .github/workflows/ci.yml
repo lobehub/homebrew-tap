@@ -8,6 +8,9 @@ on:
 jobs:
   audit:
     runs-on: macos-latest
+    # 未认证时 brew audit --online 只有 60 req/h，很容易撞限流
+    env:
+      HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
