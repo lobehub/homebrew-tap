@@ -2,8 +2,7 @@ cask "lobehub@canary" do
   version "2.3.5-canary.1"
   sha256 "571ff42dc77e9c719d12fee88f926acf8275cd12a35e4904d29fbc99c01d85ab"
 
-  url "https://github.com/lobehub/lobehub/releases/download/v#{version}/LobeHub-#{version}-arm64.dmg",
-      verified: "github.com/lobehub/lobehub/"
+  url "https://github.com/lobehub/lobehub/releases/download/v#{version}/LobeHub-#{version}-arm64.dmg"
   name "LobeHub Canary"
   desc "Desktop client for LobeHub super-agents (canary channel)"
   homepage "https://lobehub.com/"

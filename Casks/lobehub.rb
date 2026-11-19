@@ -5,8 +5,7 @@ cask "lobehub" do
   sha256 arm:   "f36e2b7c34986b49d571e3d7b44824ee71cb5978efcd1c31c80a30e0b8d965c1",
          intel: "95348b5bb452ec4ca7cd540c36bc4f8775a0abf58ea9e907e6fab767bcbfe840"
 
-  url "https://github.com/lobehub/lobehub/releases/download/v#{version}/LobeHub-#{version}-#{arch}.dmg",
-      verified: "github.com/lobehub/lobehub/"
+  url "https://github.com/lobehub/lobehub/releases/download/v#{version}/LobeHub-#{version}-#{arch}.dmg"
   name "LobeHub"
   desc "Desktop client for LobeHub super-agents"
   homepage "https://lobehub.com/"

@@ -11,8 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: Homebrew/actions/setup-homebrew@main
-
       - name: Tap this repo
         run: |
           brew untap lobehub/tap --force || true
