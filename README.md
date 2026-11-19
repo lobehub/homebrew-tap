@@ -75,13 +75,17 @@ Canary 构建的上游只发布 arm64 dmg，因此该 cask 目前不覆盖 Intel
 
 `bump.yml` 支持三种触发：
 
-1. 定时（每 6 小时，cron `17 */6 * * *`）
-2. 手动 `workflow_dispatch`
-3. `repository_dispatch` —— `lobehub/lobehub` 发版后可以直接 ping 这个 tap：
+1. 定时（每 6 小时，cron `17 */6 * * *`），全量检查
+2. 手动 `workflow_dispatch`，可选 `all / stable / canary / formula`
+3. `repository_dispatch` —— `lobehub/lobehub` 的 `release-desktop-stable` / `release-desktop-canary` 在 Release 发布成功后会自动 ping 这个 tap（`event_type=desktop-release`，payload 带 `channel` 和 `version`），只 bump 对应通道；定时任务作为兜底
+
+手动 ping：
 
 ```bash
 gh api /repos/lobehub/homebrew-tap/dispatches \
-  -f event_type=desktop-release
+  -f event_type=desktop-release \
+  -f client_payload.channel=stable \
+  -f client_payload.version=2.3.4
 ```
 
 ## 本地验证

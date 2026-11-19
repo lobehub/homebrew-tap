@@ -4,7 +4,15 @@ on:
   schedule:
     - cron: "17 */6 * * *"
   workflow_dispatch:
+    inputs:
+      target:
+        description: "What to bump"
+        required: false
+        type: choice
+        options: [all, stable, canary, formula]
+        default: all
   repository_dispatch:
+    # lobehub/lobehub 发版后会 ping 这里，payload: { channel, version }
     types: [desktop-release, cli-release]
 
 permissions:
@@ -20,9 +28,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Resolve target
+        id: target
+        env:
+          CHANNEL: ${{ github.event.client_payload.channel }}
+          DISPATCH_VERSION: ${{ github.event.client_payload.version }}
+          INPUT_TARGET: ${{ inputs.target }}
+        run: |
+          echo "dispatch: channel=${CHANNEL:-none} version=${DISPATCH_VERSION:-none}"
+          case "${CHANNEL}" in
+            stable | canary | formula) target="${CHANNEL}" ;;
+            *) target="${INPUT_TARGET:-all}" ;;
+          esac
+          echo "target=${target}" >>"$GITHUB_OUTPUT"
+          echo "Resolved target: ${target}"
+
       - name: Bump cask & formula to upstream latest
         id: bump
-        run: ./scripts/bump.sh
+        run: ./scripts/bump.sh "${{ steps.target.outputs.target }}"
 
       - name: Commit
         if: steps.bump.outputs.changed == '1'
@@ -30,5 +53,9 @@ jobs:
           git config user.name "lobehub-bot"
           git config user.email "bot@lobehub.com"
           git add -A
-          git commit -m "chore: bump to upstream latest"
-          git push
+          git commit -m "chore: bump ${{ steps.target.outputs.target }} to upstream latest"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep $((i * 2))
+          done
+          exit 1
