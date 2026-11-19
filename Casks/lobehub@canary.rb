@@ -1,30 +1,34 @@
 cask "lobehub@canary" do
-  arch arm: "arm64", intel: "x64"
+  version "2.3.5-canary.1"
+  sha256 "571ff42dc77e9c719d12fee88f926acf8275cd12a35e4904d29fbc99c01d85ab"
 
-  version "0.0.0-canary.0"
-  sha256 arm:   "0000000000000000000000000000000000000000000000000000000000000000",
-         intel: "0000000000000000000000000000000000000000000000000000000000000000"
-
-  url "https://github.com/lobehub/lobehub/releases/download/v#{version}/LobeHub-#{version}-#{arch}.dmg",
+  url "https://github.com/lobehub/lobehub/releases/download/v#{version}/LobeHub-#{version}-arm64.dmg",
       verified: "github.com/lobehub/lobehub/"
   name "LobeHub Canary"
-  desc "AI chat client supporting multiple model providers (canary channel)"
+  desc "Desktop client for LobeHub super-agents (canary channel)"
   homepage "https://lobehub.com/"
 
   livecheck do
-    skip "Auto-bumped via release workflow"
+    skip "Canary releases are prereleases and are bumped from the GitHub releases API"
   end
 
   auto_updates true
-  conflicts_with cask: "lobehub/tap/lobehub"
+  conflicts_with cask: "lobehub"
+  depends_on arch: :arm64
+  depends_on macos: :ventura
 
   app "LobeHub.app"
 
   zap trash: [
+    "~/Library/Application Support/com.lobehub.lobehub-desktop",
     "~/Library/Application Support/LobeHub",
+    "~/Library/Caches/com.lobehub.lobehub-desktop",
+    "~/Library/Caches/LobeHub",
+    "~/Library/HTTPStorages/com.lobehub.lobehub-desktop",
+    "~/Library/HTTPStorages/com.lobehub.lobehub-desktop.binarycookies",
+    "~/Library/Logs/LobeHub",
     "~/Library/Preferences/com.lobehub.lobehub-desktop.plist",
     "~/Library/Saved Application State/com.lobehub.lobehub-desktop.savedState",
-    "~/Library/Logs/LobeHub",
-    "~/Library/Caches/com.lobehub.lobehub-desktop",
+    "~/Library/WebKit/com.lobehub.lobehub-desktop",
   ]
 end

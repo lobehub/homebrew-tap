@@ -1,14 +1,9 @@
 name: CI
 
 on:
-  pull_request:
-    paths:
-      - "Casks/**"
-      - ".github/workflows/ci.yml"
   push:
     branches: [main]
-    paths:
-      - "Casks/**"
+  pull_request:
 
 jobs:
   audit:
@@ -16,17 +11,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+      - uses: Homebrew/actions/setup-homebrew@master
 
       - name: Tap this repo
         run: |
-          tap_dir="$(brew --repository)/Library/Taps/lobehub/homebrew-tap"
-          mkdir -p "$(dirname "$tap_dir")"
-          ln -sf "$PWD" "$tap_dir"
+          brew untap lobehub/tap --force || true
+          brew tap lobehub/tap "$GITHUB_WORKSPACE"
+          brew trust lobehub/tap || true
 
-      - name: brew style
-        run: brew style --cask Casks/*.rb
+      - name: Style
+        run: brew style lobehub/tap
 
-      - name: brew audit
-        run: brew audit --cask --tap lobehub/tap
+      - name: Audit stable cask
+        run: brew audit --cask --online lobehub/tap/lobehub
+
+      # canary 基于 GitHub prerelease，--online 的 prerelease 检查必然会报错，
+      # 这里只做离线 audit，再用 fetch 校验 dmg 的 SHA-256。
+      - name: Audit canary cask
+        run: brew audit --cask lobehub/tap/lobehub@canary
+
+      - name: Audit formula
+        run: brew audit --formula --online lobehub/tap/lobehub-cli
+
+      - name: Verify checksums
+        run: |
+          brew fetch --cask lobehub/tap/lobehub
+          brew fetch --cask lobehub/tap/lobehub@canary
