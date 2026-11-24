@@ -1,9 +1,9 @@
 cask "lobehub" do
   arch arm: "arm64", intel: "x64"
 
-  version "2.3.5"
-  sha256 arm:   "021ecc6a192b245d67eb5cabfbc1f6890637c81bf432e9e9ef4d5ead06c8120e",
-         intel: "be624a41b051a527891ebc070d7e26c79719c866bd516208d6683acb2bdb76cb"
+  version "2.3.6"
+  sha256 arm:   "79dab4f31d17ecf3a380369792c6d41ab72fafc7e5caa572e38ebb8906ef4e94",
+         intel: "3281d8916f02b77adf540d62be539ad6cc3ee7472f937186dd1e3dde640f23b3"
 
   url "https://github.com/lobehub/lobehub/releases/download/v#{version}/LobeHub-#{version}-#{arch}.dmg"
   name "LobeHub"
