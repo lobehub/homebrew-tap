@@ -1,6 +1,6 @@
 cask "lobehub@canary" do
-  version "2.3.7-canary.1"
-  sha256 "5762d09d78d19af50fb4b49dc41e7af03a769bd7d7148e8bfe500938408d122b"
+  version "2.3.7-canary.2"
+  sha256 "be71d6d26a99dcc1bc7cbe5330d6baf7d773bd70cfe552d75f2dc087782f1d8f"
 
   url "https://github.com/lobehub/lobehub/releases/download/v#{version}/LobeHub-#{version}-arm64.dmg"
   name "LobeHub Canary"
